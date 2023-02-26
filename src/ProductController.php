@@ -3,16 +3,18 @@
 class ProductController
 {
     private $method;
-    public $id;
+    public $gateway;
+    public $req;
 
-    public function __construct(private $gateway)
+    public function __construct($gateway)
     {
+        $this->gateway = $gateway;
+
         // Separate url components
-        $req = explode("/", $_SERVER['REQUEST_URI']);
+        $this->req = explode("/", $_SERVER['REQUEST_URI']);
 
         // Get method and ID
         $this->method = $_SERVER["REQUEST_METHOD"];
-        $this->id = $req[2] ?? null;
     }
 
     public function handleRequest()
@@ -22,13 +24,22 @@ class ProductController
                 echo json_encode($this->gateway->getProducts());
                 break;
             case "POST":
-                echo json_encode($this->gateway->insertProduct());
-                break;
-            case "DELETE":
-                echo json_encode($this->gateway->deleteProduct($this->id));
+                if (count($this->req) >= 2 && $this->req[2] === "") {
+                    echo json_encode($this->gateway->insertProduct());
+                    break;
+                }
+                if (count($this->req) >= 3 && $this->req[2] === "delete") {
+                    $sku = (int) $_POST["sku"];
+                    echo json_encode($this->gateway->deleteProduct($sku));
+                    break;
+                } else {
+                    http_response_code(404);
+                    echo json_encode(["error" => "Page not found"]);
+                }
                 break;
             default:
-                echo "404 Not Found a3chiri";
+                http_response_code(403);
+                echo json_encode(["error" => "Unauthorized"]);
                 break;
         };
     }

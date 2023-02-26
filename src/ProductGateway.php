@@ -48,8 +48,12 @@ class ProductGateway
         }
 
         // Get validation errors
-        $errors = [...$product->validateInput(), ...$product->validateAttributes()];
+        $errors = [];
+        $inputErrors = $product->validateInput();
+        $attributesErrors = $product->validateAttributes();
 
+        if (count($inputErrors)) array_push($errors, ...$inputErrors);
+        if (count($attributesErrors)) array_push($errors, ...$attributesErrors);
 
         // Display errors if any
         if (!empty($errors)) {
@@ -69,11 +73,11 @@ class ProductGateway
             "name" => $data["name"] ?? null,
             "price" => array_key_exists("price", $data) ? (int) $data["price"] : 0,
             "type" => $data["type"] ?? null,
-            "weight" => array_key_exists("weight", $data) ? (int) $data["weight"] : null,
-            "height" => array_key_exists("height", $data) ? (int) $data["height"] : null,
-            "width" => array_key_exists("width", $data) ? (int) $data["width"] : null,
-            "length" => array_key_exists("length", $data) ? (int) $data["length"] : null,
-            "size" => array_key_exists("size", $data) ? (int) $data["size"] : null,
+            "weight" => array_key_exists("weight", $data) ? (float) $data["weight"] : null,
+            "height" => array_key_exists("height", $data) ? (float) $data["height"] : null,
+            "width" => array_key_exists("width", $data) ? (float) $data["width"] : null,
+            "length" => array_key_exists("length", $data) ? (float) $data["length"] : null,
+            "size" => array_key_exists("size", $data) ? (float) $data["size"] : null,
         ]);
 
         return $product->input;
@@ -82,6 +86,10 @@ class ProductGateway
     // Delete item by sku key
     public function deleteProduct($sku)
     {
+        if (!$sku) {
+            http_response_code(500);
+            return ["message" => "Invalid sku key"];
+        }
         $sql = "DELETE FROM products WHERE sku = :sku";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(["sku" => $sku]);
