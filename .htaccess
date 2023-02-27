@@ -1,2 +1,7 @@
+
+# HTID:21297115: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW
+php_value display_errors 1
+# DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES ABOVE HTID:21297115:
+Header set Access-Control-Allow-Origin "*"
 RewriteEngine On
 RewriteRule . index.php
