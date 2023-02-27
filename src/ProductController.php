@@ -19,6 +19,7 @@ class ProductController
 
     public function handleRequest()
     {
+
         switch ($this->method) {
             case "GET":
                 echo json_encode($this->gateway->getProducts());
@@ -29,7 +30,10 @@ class ProductController
                     break;
                 }
                 if (count($this->req) >= 3 && $this->req[2] === "delete") {
-                    $sku = (int) $_POST["sku"];
+                    $json = file_get_contents('php://input');
+                    $data = json_decode($json, true);
+
+                    $sku = (int) $data["sku"];
                     echo json_encode($this->gateway->deleteProduct($sku));
                     break;
                 } else {

@@ -55,6 +55,8 @@ class ProductGateway
         if (count($inputErrors)) array_push($errors, ...$inputErrors);
         if (count($attributesErrors)) array_push($errors, ...$attributesErrors);
 
+
+
         // Display errors if any
         if (!empty($errors)) {
             http_response_code(422);
@@ -86,7 +88,11 @@ class ProductGateway
     // Delete item by sku key
     public function deleteProduct($sku)
     {
-        if (!$sku) {
+        if (!is_numeric($sku)) {
+            http_response_code(501);
+            return ["message" => "Invalid sku key"];
+        }
+        if ($sku <= 0) {
             http_response_code(500);
             return ["message" => "Invalid sku key"];
         }
