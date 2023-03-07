@@ -25,15 +25,15 @@ class ProductController
                 echo json_encode($this->gateway->getProducts());
                 break;
             case "POST":
-                if (count($this->req) >= 2 && $this->req[2] === "") {
+                if (count($this->req) == 2 && $this->req[1] === "") {
                     echo json_encode($this->gateway->insertProduct());
                     break;
                 }
-                if (count($this->req) >= 3 && $this->req[2] === "delete") {
+                if (count($this->req) >= 2 && $this->req[1] === "delete") {
                     $json = file_get_contents('php://input');
                     $data = json_decode($json, true);
 
-                    $sku = (int) $data["sku"];
+                    $sku = strtolower($data["sku"]);
                     echo json_encode($this->gateway->deleteProduct($sku));
                     break;
                 } else {

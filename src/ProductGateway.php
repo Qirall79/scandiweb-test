@@ -21,31 +21,24 @@ class ProductGateway
 
     public function insertProduct()
     {
-        $data = $_POST;
+
+        // get request body
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
         $input = [
-            "sku" => array_key_exists("sku", $data) ? (int) $data["sku"] : 0,
+            "sku" => array_key_exists("sku", $data) ? strtolower($data["sku"]) : "",
             "name" => $data["name"] ?? null,
-            "price" => array_key_exists("price", $data) ? (int) $data["price"] : 0,
-            "type" => $data["type"] ?? null,
+            "price" => array_key_exists("price", $data) ? $data["price"] : "",
+            "type" => $data["type"] ? strtolower($data["type"]) : "",
+            "weight" => array_key_exists("weight", $data) ?  $data["weight"] : "",
+            "height" => array_key_exists("height", $data) ?  $data["height"] : "",
+            "width" => array_key_exists("width", $data) ?  $data["width"] : "",
+            "length" => array_key_exists("length", $data) ?  $data["length"] : "",
+            "size" => array_key_exists("size", $data) ?  $data["size"] : "",
         ];
 
-        $product = [];
-
-        // get product based on type using inheritance
-        switch ($input["type"]) {
-            case "book":
-                $product = new Book($data, $this->conn);
-                break;
-            case "dvd":
-                $product = new Dvd($data, $this->conn);
-                break;
-            case "furniture":
-                $product = new Furniture($data, $this->conn);
-                break;
-            default:
-                echo "Invalid product type ";
-                return $input["type"];
-        }
+        // create product
+        $product = new Product($input, $this->conn);
 
         // Get validation errors
         $errors = [];
@@ -71,9 +64,9 @@ class ProductGateway
         $stmt = $this->conn->prepare($sql);
 
         $stmt->execute([
-            "sku" => array_key_exists("sku", $data) ? (int) $data["sku"] : 0,
+            "sku" => array_key_exists("sku", $data) ? strtolower($data["sku"]) : 0,
             "name" => $data["name"] ?? null,
-            "price" => array_key_exists("price", $data) ? (int) $data["price"] : 0,
+            "price" => array_key_exists("price", $data) ? (float) $data["price"] : 0,
             "type" => $data["type"] ?? null,
             "weight" => array_key_exists("weight", $data) ? (float) $data["weight"] : null,
             "height" => array_key_exists("height", $data) ? (float) $data["height"] : null,
@@ -88,11 +81,8 @@ class ProductGateway
     // Delete item by sku key
     public function deleteProduct($sku)
     {
-        if (!is_numeric($sku)) {
-            http_response_code(501);
-            return ["message" => "Invalid sku key"];
-        }
-        if ($sku <= 0) {
+
+        if (strlen($sku) <= 0) {
             http_response_code(500);
             return ["message" => "Invalid sku key"];
         }
